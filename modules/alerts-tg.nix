@@ -15,7 +15,7 @@
         
         telegramBotToken = mkOption {
           type = types.str;
-          description = "The Telegram bot token for ${name}.";
+          description = "The Telegram bot token for ${name}, OR a file to read from.";
         };
 
         telegramChatId = mkOption {
@@ -54,7 +54,8 @@
     };
     
     imports = [
-      self.nixosModules.alerts-login-tg
+      self.nixosModules.alerts-tg-login
+      self.nixosModules.alerts-tg-sudo
     ];
   };
 }

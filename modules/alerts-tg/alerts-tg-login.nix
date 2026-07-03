@@ -1,9 +1,9 @@
 { self, ... }:
 
 {
-  flake.nixosModules.alerts-login-tg = { config, lib, pkgs, ... }:
+  flake.nixosModules.alerts-tg-login = { config, lib, pkgs, ... }:
 
-  # Test syntax with  nix eval .#nixosModules.alerts-login-tg
+  # Test syntax with  nix eval .#nixosModules.alerts-tg-login
 
   let
     # Look up configuration values from the global config tree instead of arguments
@@ -19,6 +19,12 @@
         TIME="$(date)"
         USER_NAME="''${1:-Unknown}"
 
+        if [ -f "${cfg.telegramBotToken}" ]; then
+          TOKEN="$(cat "${cfg.telegramBotToken}")"
+        else
+          TOKEN="${cfg.telegramBotToken}"
+        fi
+
         MESSAGE="🚨 *LOGIN ALERT* 🚨
 
 🖥️ *Host:* \`$HOST\`
@@ -26,7 +32,7 @@
 🕒 *Time:* \`$TIME\`"
 
         curl --silent --show-error --fail -X POST \
-          "https://api.telegram.org/bot${cfg.telegramBotToken}/sendMessage" \
+          "https://api.telegram.org/bot$TOKEN/sendMessage" \
           --data-urlencode "chat_id=${cfg.telegramChatId}" \
           --data-urlencode "parse_mode=Markdown" \
           --data-urlencode "text=$MESSAGE" \

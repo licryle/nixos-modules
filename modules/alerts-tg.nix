@@ -23,20 +23,6 @@
           description = "Telegram chat or channel ID for ${name}.";
         };
       };
-
-      # 2. Put the config verification logic RIGHT HERE inside the function blueprint!
-      config = mkIf config.enable {
-        assertions = [
-          {
-            assertion = config.telegramBotToken != "";
-            message = "services.alerts_tg.${name} error: telegramBotToken cannot be empty when enabled.";
-          }
-          {
-            assertion = config.telegramChatId != "";
-            message = "services.alerts_tg.${name} error: telegramChatId cannot be empty when enabled.";
-          }
-        ];
-      };
     };
   in {
     options.services.alerts_tg = {
@@ -52,6 +38,17 @@
         default = {};
         description = "Telegram alerts for sudo commands.";
       };
+    };
+
+    # 2. Automatically generate the assertions for ALL defined submodules dynamically!
+    config = {
+      assertions = mapAttrsToList (serviceName: serviceCfg: {
+        assertion = serviceCfg.enable -> (serviceCfg.telegramBotToken != "");
+        message = "services.alerts_tg.${serviceName} error: telegramBotToken cannot be empty when enabled.";
+      }) cfg ++ mapAttrsToList (serviceName: serviceCfg: {
+        assertion = serviceCfg.enable -> (serviceCfg.telegramChatId != "");
+        message = "services.alerts_tg.${serviceName} error: telegramChatId cannot be empty when enabled.";
+      }) cfg;
     };
     
     imports = [

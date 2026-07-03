@@ -6,7 +6,7 @@
   # Test syntax with  nix eval .#nixosModules.alerts-tg
 
   let
-    inherit (lib) mkEnableOption mkOption types mkIf;
+    inherit (lib) mkEnableOption mkOption types mkIf mapAttrsToList;
 
     # Look up configuration values from the global config tree instead of arguments
     alertOptions = { name, config, ... }: {
@@ -41,7 +41,9 @@
     };
 
     # 2. Automatically generate the assertions for ALL defined submodules dynamically!
-    config = {
+    config = let 
+      cfg = config.services.alerts_tg;
+    in {
       assertions = mapAttrsToList (serviceName: serviceCfg: {
         assertion = serviceCfg.enable -> (serviceCfg.telegramBotToken != "");
         message = "services.alerts_tg.${serviceName} error: telegramBotToken cannot be empty when enabled.";

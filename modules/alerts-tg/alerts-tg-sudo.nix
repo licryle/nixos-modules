@@ -8,7 +8,7 @@
   let
     # Look up configuration values from the global config tree instead of arguments
     inherit (lib) mkEnableOption mkOption types mkIf;
-    cfg = config.services.alerts_tg.login;
+    cfg = config.services.alerts_tg.sudo;
 
     notifyScript = pkgs.writeShellApplication {
       name = "sudo-notify-action";

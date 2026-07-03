@@ -1,9 +1,9 @@
 { self, ... }:
 
 {
-  flake.nixosModules.alerts-tg-login = { config, lib, pkgs, ... }:
+  flake.nixosModules.alerts_tg_login = { config, lib, pkgs, ... }:
 
-  # Test syntax with  nix eval .#nixosModules.alerts-tg-login
+  # Test syntax with  nix eval .#nixosModules.alerts_tg_login
 
   let
     # Look up configuration values from the global config tree instead of arguments

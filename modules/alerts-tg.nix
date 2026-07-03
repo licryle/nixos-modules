@@ -1,9 +1,9 @@
 { self, ... }:
 
 {
-  flake.nixosModules.alerts-tg = { config, lib, pkgs, ... }:
+  flake.nixosModules.alerts_tg = { config, lib, pkgs, ... }:
 
-  # Test syntax with  nix eval .#nixosModules.alerts-tg
+  # Test syntax with  nix eval .#nixosModules.alerts_tg
 
   let
     inherit (lib) mkEnableOption mkOption types mkIf mapAttrsToList;
@@ -54,8 +54,8 @@
     };
     
     imports = [
-      self.nixosModules.alerts-tg-login
-      self.nixosModules.alerts-tg-sudo
+      self.nixosModules.alerts_tg_login
+      self.nixosModules.alerts_tg_sudo
     ];
   };
 }

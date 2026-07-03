@@ -1,9 +1,9 @@
 { self, ... }:
 
 {
-  flake.nixosModules.alerts-tg-sudo = { config, lib, pkgs, ... }:
+  flake.nixosModules.alerts_tg_sudo = { config, lib, pkgs, ... }:
 
-  # Test syntax with  nix eval .#nixosModules.alerts-tg-sudo
+  # Test syntax with  nix eval .#nixosModules.alerts_tg_sudo
 
   let
     # Look up configuration values from the global config tree instead of arguments

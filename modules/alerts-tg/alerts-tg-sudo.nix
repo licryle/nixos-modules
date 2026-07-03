@@ -33,11 +33,26 @@
 ⌨ *Command:* \`$COMMAND\`
 🕒 *Time:* \`$TIME\`"
 
+        # Split Chat ID and Topic ID if an underscore exists
+        RAW_ID="${cfg.telegramChatId}"
+        CHAT_ID="''${RAW_ID%_*}"
+        THREAD_ID="''${RAW_ID#*_}"
+
+        # Initialize base curl arguments
+        CURL_ARGS=(
+          "--data-urlencode" "chat_id=$CHAT_ID"
+          "--data-urlencode" "parse_mode=Markdown"
+          "--data-urlencode" "text=$MESSAGE"
+        )
+
+        # If a thread ID was extracted from the underscore, append it to the arguments
+        if [ "$CHAT_ID" != "$RAW_ID" ]; then
+          CURL_ARGS+=("--data-urlencode" "message_thread_id=$THREAD_ID")
+        fi
+
         curl --silent --show-error --fail -X POST \
           "https://api.telegram.org/bot$TOKEN/sendMessage" \
-          --data-urlencode "chat_id=${cfg.telegramChatId}" \
-          --data-urlencode "parse_mode=Markdown" \
-          --data-urlencode "text=$MESSAGE" \
+          "''${CURL_ARGS[@]}" \
           --output /dev/null
       '';
     };

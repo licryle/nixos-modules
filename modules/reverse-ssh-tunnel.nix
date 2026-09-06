@@ -43,6 +43,12 @@
           description = "Local port to expose remotely.";
         };
 
+        localAddress = mkOption {
+          type = types.str;
+          default = "127.0.0.1";
+          description = "Local address to forward traffic to.";
+        };
+
         bindAddress = mkOption {
           type = types.str;
           default = "0.0.0.0";
@@ -93,7 +99,7 @@
           ${pkgs.autossh}/bin/autossh -M 0 \
             -N \
             ${sshOptsStr} \
-            -R ${tunnelCfg.bindAddress}:${toString tunnelCfg.remotePort}:localhost:${toString tunnelCfg.localPort} \
+            -R ${tunnelCfg.bindAddress}:${toString tunnelCfg.remotePort}:${tunnelCfg.localAddress}:${toString tunnelCfg.localPort} \
             ${tunnelCfg.user}@${tunnelCfg.host}
         '';
       in
@@ -114,7 +120,7 @@
         serviceConfig = {
           Type = "simple";
           User = "root";
-          EnvironmentFile = lib.optional (tunnelCfg.environmentFile != null) tunnelCfg.environmentFile;
+          EnvironmentFile = lib.mkIf (tunnelCfg.environmentFile != null) tunnelCfg.environmentFile;
           Restart = "always";
           RestartSec = "10";
         };
@@ -139,7 +145,7 @@
     config = mkIf cfg.enable {
       assertions = lib.mapAttrsToList (name: tunnelCfg: {
         assertion = (tunnelCfg.identityFile != null) || (tunnelCfg.environmentFile != null);
-        message = "services.reverse-ssh-tunnel.tunnels.${name} requires either identityFile or environmentFile.";
+        message = "services.reverse_ssh_tunnel.tunnels.${name} requires either identityFile or environmentFile.";
       }) enabledTunnels;
 
       systemd.services = lib.mapAttrs' (name: tunnelCfg:

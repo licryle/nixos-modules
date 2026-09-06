@@ -9,17 +9,24 @@
   outputs = inputs@{ nixpkgs, flake-parts, ... }:
     let
       lib = nixpkgs.lib;
+      modulesDir = ./modules;
 
-      # 1. Gather all files under ./modules
-      # 2. Exclude the entire direnv directory
-      # 3. Filter strictly for .nix files
-      allModuleFiles = lib.fileset.toList (
-        lib.fileset.difference ./modules (
-          lib.fileset.maybeMissing ./modules/paseo-with-pi/direnv
-        )
-      );
-      
-      nixFiles = builtins.filter (p: lib.hasSuffix ".nix" (toString p)) allModuleFiles;
+      # 1. Collect all .nix files directly via builtins.readDir / filesystem traversal
+      findNixFiles = dir:
+        lib.flatten (
+          lib.mapAttrsToList (name: type:
+            let
+              path = dir + "/${name}";
+            in
+              if type == "directory" then
+                if  name == ".direnv" then [ ]
+                else findNixFiles path
+              else if type == "regular" && lib.hasSuffix ".nix" name && name != "flake.nix" then [ path ]
+              else [ ]
+          ) (builtins.readDir dir)
+        );
+
+      nixFiles = findNixFiles modulesDir;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = nixFiles;

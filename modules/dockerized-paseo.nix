@@ -36,9 +36,9 @@
       };
 
       allowHostnames = mkOption {
-        type = types.str;
-        default = "127.0.0.1,localhost";
-        description = "Set PASEO_HOSTNAMES (enables/disables host checking).";
+        type = types.listOf types.str;
+        default = [ "127.0.0.1" "localhost" ];
+        description = "List of hostnames allowed by Paseo. Expanded to comma-separated PASEO_HOSTNAMES.";
       };
       
       webUIPasswordFile = mkOption {
@@ -80,7 +80,7 @@
         environmentFiles = lib.optional (cfg.webUIPasswordFile != null) cfg.webUIPasswordFile;
         
         environment = {
-          PASEO_HOSTNAMES = if cfg.allowHostnames then "true" else "127.0.0.1,localhost";
+          PASEO_HOSTNAMES = lib.concatStringsSep "," cfg.allowHostnames;
           PASEO_RELAY_ENABLED = if cfg.relayEnabled then "true" else "false";
         } // cfg.environment;
       };

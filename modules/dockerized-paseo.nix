@@ -16,8 +16,14 @@
         default = "ghcr.io/licryle/nixos-modules/dockerized-paseo:latest";
         description = "Container image to run for Paseo.";
       };
+      
+      listenAddress = mkOption {
+        type = types.str;
+        default = "127.0.0.1";
+        description = "Host interface address to bind the published port to. Set to 0.0.0.0 to expose externally.";
+      };
 
-      port = mkOption {
+      listenPort = mkOption {
         type = types.port;
         default = 6767;
         description = "Host port to map to Paseo daemon (6767).";
@@ -70,7 +76,7 @@
       # Container lifecycle via systemd and Podman/Docker
       virtualisation.oci-containers.containers.paseo = {
         image = cfg.image;
-        ports = [ "${toString cfg.port}:6767" ];
+        ports = [ "${cfg.listenAddress}:${toString cfg.listenPort}:6767" ];
         volumes = [
           "${cfg.workspacePath}:/workspace:Z"
           "${cfg.dataDir}:/home/paseo:Z"

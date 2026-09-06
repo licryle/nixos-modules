@@ -1,12 +1,12 @@
 { self, ... }:
 
 {
-  flake.nixosModules.reverse-ssh-tunnel = { config, lib, pkgs, ... }:
+  flake.nixosModules.reverse_ssh_tunnel = { config, lib, pkgs, ... }:
 
-  # Test syntax with: nix eval .#nixosModules.reverse-ssh-tunnel
+  # Test syntax with: nix eval .#nixosModules.reverse_ssh_tunnel
   let
     inherit (lib) mkEnableOption mkOption mkIf types;
-    cfg = config.services.reverse-ssh-tunnel;
+    cfg = config.services.reverse_ssh_tunnel;
 
     tunnelSubmodule = { name, config, ... }: {
       options = {
@@ -126,7 +126,7 @@
             "exec ${tunnelCmd}";
       };
   in {
-    options.services.reverse-ssh-tunnel = {
+    options.services.reverse_ssh_tunnel = {
       enable = mkEnableOption "Generic persistent reverse SSH tunnels";
 
       tunnels = mkOption {

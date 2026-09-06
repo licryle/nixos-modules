@@ -1,14 +1,14 @@
 { self, ... }:
 
 {
-  flake.nixosModules.dockerized-paseo = { config, lib, pkgs, ... }:
+  flake.nixosModules.dockerized_paseo = { config, lib, pkgs, ... }:
 
-  # Test syntax with: nix eval .#nixosModules.dockerized-paseo
+  # Test syntax with: nix eval .#nixosModules.dockerized_paseo
   let
     inherit (lib) mkEnableOption mkOption types mkIf;
-    cfg = config.services.dockerized-paseo;
+    cfg = config.services.dockerized_paseo;
   in {
-    options.services.dockerized-paseo = {
+    options.services.dockerized_paseo = {
       enable = mkEnableOption "Paseo server OCI container service";
 
       image = mkOption {

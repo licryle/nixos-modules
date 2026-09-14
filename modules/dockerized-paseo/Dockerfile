@@ -33,18 +33,24 @@ USER paseo
 WORKDIR /home/paseo
 
 # 6. Install Nix without daemon mode AND explicitly pass the sandbox override flag into the installer arguments
-RUN mkdir -p /tmp/nix-final-unpack && cd /tmp/nix-final-unpack && \
-    curl -LO https://releases.nixos.org/nix/nix-2.35.2/nix-2.35.2-x86_64-linux.tar.xz && \
-    tar xf nix-2.35.2-x86_64-linux.tar.xz && \
-    cd nix-2.35.2-x86_64-linux && \
-    # Crucial: Pre-create the persistent profile directory structure in /nix
+ARG TARGETARCH
+ARG NIX_VERSION=2.35.2
+
+RUN set -eux; \
+    case "$TARGETARCH" in \
+      amd64) NIX_ARCH="x86_64-linux" ;; \
+      arm64) NIX_ARCH="aarch64-linux" ;; \
+      *) echo "Unsupported architecture: $TARGETARCH" >&2; exit 1 ;; \
+    esac; \
+    mkdir -p /tmp/nix-final-unpack && \
+    cd /tmp/nix-final-unpack && \
+    curl -fLO "https://releases.nixos.org/nix/nix-${NIX_VERSION}/nix-${NIX_VERSION}-${NIX_ARCH}.tar.xz" && \
+    tar xf "nix-${NIX_VERSION}-${NIX_ARCH}.tar.xz" && \
+    cd "nix-${NIX_VERSION}-${NIX_ARCH}" && \
     mkdir -p /nix/var/nix/profiles && \
-    # Crucial: Redirect the home profile pointer to /nix before the installer runs
     ln -sf /nix/var/nix/profiles/default /home/paseo/.nix-profile && \
-    # Set up sandbox configuration
     mkdir -p ~/.config/nix && \
     echo "sandbox = false" > ~/.config/nix/nix.conf && \
-    # Run the installer using ONLY valid flags from its menu
     ./install --yes && \
     rm -rf /tmp/nix-final-unpack
 

@@ -64,6 +64,17 @@
         default = {};
         description = "Additional environment variables passed to the Paseo container.";
       };
+
+      autoUpdate = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Enable automatic image updates via Podman.
+          Requires `virtualisation.containers.autoUpdate.enable = true`
+          in the host configuration. The image is checked according to
+          Podman's auto-update schedule (`virtualisation.containers.autoUpdate.dates`).
+        '';
+      };
     };
 
     config = mkIf cfg.enable {
@@ -76,6 +87,10 @@
       # Container lifecycle via systemd and Podman/Docker
       virtualisation.oci-containers.containers.paseo = {
         image = cfg.image;
+
+        extraOptions = lib.optional cfg.autoUpdate
+          "--label=io.containers.autoupdate=registry";
+
         ports = [ "${cfg.listenAddress}:${toString cfg.listenPort}:6767" ];
         volumes = [
           "${cfg.workspacePath}:/workspace:Z"

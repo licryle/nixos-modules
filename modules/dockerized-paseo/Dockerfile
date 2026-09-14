@@ -23,9 +23,50 @@ RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
 # 3. Install pi without --ignore-scripts so npm generates the bin link
 RUN npm install -g @earendil-works/pi-coding-agent
 
-# 4. Explicit fallback link for pi entrypoint
-#RUN ln -sf /usr/local/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js /usr/local/bin/pi || true \
-#RUN chmod +x /usr/local/bin/pi
-#RUN chmod +x /usr/local/bin/gh
+############ NIX INSTALL ############
+# 4. Install Nix-Shell
+RUN apt-get update && apt-get install -y curl xz-utils && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /nix && chown -R paseo:paseo /nix
 
-#USER paseo
+# 5. Drop natively to the paseo user for the installation phase
+USER paseo
+WORKDIR /home/paseo
+
+# 6. Install Nix without daemon mode AND explicitly pass the sandbox override flag into the installer arguments
+RUN mkdir -p /tmp/nix-final-unpack && cd /tmp/nix-final-unpack && \
+    curl -LO https://releases.nixos.org/nix/nix-2.35.2/nix-2.35.2-x86_64-linux.tar.xz && \
+    tar xf nix-2.35.2-x86_64-linux.tar.xz && \
+    cd nix-2.35.2-x86_64-linux && \
+    # Crucial: Pre-create the persistent profile directory structure in /nix
+    mkdir -p /nix/var/nix/profiles && \
+    # Crucial: Redirect the home profile pointer to /nix before the installer runs
+    ln -sf /nix/var/nix/profiles/default /home/paseo/.nix-profile && \
+    # Set up sandbox configuration
+    mkdir -p ~/.config/nix && \
+    echo "sandbox = false" > ~/.config/nix/nix.conf && \
+    # Run the installer using ONLY valid flags from its menu
+    ./install --yes && \
+    rm -rf /tmp/nix-final-unpack
+
+# 7. Install direnv using the newly isolated profile system path
+RUN /nix/var/nix/profiles/default/bin/nix-env -p /nix/var/nix/profiles/default -iA nixpkgs.direnv
+
+# 8. Switch back to root to inject the global system auto-start hooks
+USER root
+
+# Force all runtime instances to bypass container sandboxing locks globally
+RUN mkdir -p /etc/nix && echo "sandbox = false" > /etc/nix/nix.conf
+
+# This forces every interactive terminal session to instantly load Nix and Direnv paths
+RUN echo '. /nix/var/nix/profiles/default/etc/profile.d/nix.sh' >> /etc/bash.bashrc && \
+    echo 'export PATH="/nix/var/nix/profiles/default/bin:${PATH}"' >> /etc/bash.bashrc && \
+    echo 'export NIX_PATH="nixpkgs=channel:nixos-unstable"' >> /etc/bash.bashrc && \
+    echo 'eval "$(direnv hook bash)"' >> /etc/bash.bashrc
+
+# 9. Set environmental pathways for the remaining build execution layers
+ENV PATH="/nix/var/nix/profiles/default/bin:${PATH}" \
+    NIX_PATH="nixpkgs=channel:nixos-unstable"
+
+# 10. Test Nix functionality right now during compilation
+RUN nix-shell -p coreutils --run "echo 'Nix environment built and saved cleanly!'"
+

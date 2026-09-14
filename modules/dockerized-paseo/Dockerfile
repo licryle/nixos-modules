@@ -50,8 +50,10 @@ RUN set -eux; \
     mkdir -p /nix/var/nix/profiles && \
     ln -sf /nix/var/nix/profiles/default /home/paseo/.nix-profile && \
     mkdir -p ~/.config/nix && \
-    echo "sandbox = false" > ~/.config/nix/nix.conf && \
-    export NIX_CONFIG="sandbox = false" && \
+    printf '%s\n' \
+      "sandbox = false" \
+      "filter-syscalls = false" \
+      > ~/.config/nix/nix.conf && \
     ./install --yes && \
     rm -rf /tmp/nix-final-unpack
 
@@ -69,7 +71,11 @@ RUN rm -f /bin/sh && \
     chmod +x /bin/sh
 
 # Force all runtime instances to bypass container sandboxing locks globally
-RUN mkdir -p /etc/nix && echo "sandbox = false" > /etc/nix/nix.conf
+RUN mkdir -p /etc/nix && \
+    printf '%s\n' \
+      "sandbox = false" \
+      "filter-syscalls = false" \
+      > /etc/nix/nix.conf
 
 # This forces every interactive terminal session to instantly load Nix and Direnv paths
 RUN echo '. /nix/var/nix/profiles/default/etc/profile.d/nix.sh' >> /etc/bash.bashrc && \

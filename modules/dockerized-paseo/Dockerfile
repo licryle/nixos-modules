@@ -54,6 +54,13 @@ RUN /nix/var/nix/profiles/default/bin/nix-env -p /nix/var/nix/profiles/default -
 # 8. Switch back to root to inject the global system auto-start hooks
 USER root
 
+# Force the system default shell symlink to point to bash instead of dash/sh.
+# This allows much nicer interactivity and auto direnv
+RUN rm -f /bin/sh && \
+    echo '#!/bin/bash' > /bin/sh && \
+    echo 'exec /bin/bash "$@"' >> /bin/sh && \
+    chmod +x /bin/sh
+
 # Force all runtime instances to bypass container sandboxing locks globally
 RUN mkdir -p /etc/nix && echo "sandbox = false" > /etc/nix/nix.conf
 

@@ -50,7 +50,7 @@
       webUIPasswordFile = mkOption {
         type = types.nullOr types.path;
         default = null;
-        description = "Path to an agenix secret file containing the PASEO_PASSWORD=\"password\" string.";
+        description = "Path to an agenix secret file containing the PASEO_PASSWORD=password (no quotes) string.";
       };
 
       relayEnabled = mkOption {

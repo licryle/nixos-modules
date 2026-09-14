@@ -51,6 +51,7 @@ RUN set -eux; \
     ln -sf /nix/var/nix/profiles/default /home/paseo/.nix-profile && \
     mkdir -p ~/.config/nix && \
     echo "sandbox = false" > ~/.config/nix/nix.conf && \
+    export NIX_CONFIG="sandbox = false" && \
     ./install --yes && \
     rm -rf /tmp/nix-final-unpack
 

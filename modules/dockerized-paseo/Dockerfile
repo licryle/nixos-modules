@@ -22,6 +22,8 @@ RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
 
 # 3. Install pi without --ignore-scripts so npm generates the bin link
 RUN npm install -g @earendil-works/pi-coding-agent
+RUN npm install -g opencode-ai
+
 
 ############ NIX INSTALL ############
 # 4. Install Nix-Shell

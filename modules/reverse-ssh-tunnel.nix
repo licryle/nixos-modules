@@ -77,6 +77,12 @@
           default = "accept-new";
           description = "SSH StrictHostKeyChecking policy.";
         };
+        
+        autosshGateTime = mkOption {
+          type = types.nullOr types.int;
+          default = 30;
+          description = "AUTOSSH_GATETIME grace period in seconds.";
+        };
       };
     };
 
@@ -111,10 +117,12 @@
 
         path = [ pkgs.openssh pkgs.sshpass pkgs.autossh ];
 
-        environment = {
-          AUTOSSH_GATETIME = "0";
-          AUTOSSH_POLL = "60";
+        environment =
+        {
           AUTOSSH_PATH = "${pkgs.openssh}/bin/ssh";
+        }
+        // lib.optionalAttrs (tunnelCfg.autosshGateTime != null) {
+          AUTOSSH_GATETIME = toString tunnelCfg.autosshGateTime;
         };
 
         serviceConfig = {

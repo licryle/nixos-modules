@@ -11,6 +11,12 @@ Currently only supports 2 types of Telegram Alerts (login & sudo).
 
 ## 🛠️ Module Features
 
+### macOS-style Plymouth theme (`boot.plymouth.nixos-mac-style`)
+A vendored `nixos-mac-style` Plymouth theme, exported both as a package
+(`packages.<system>.plymouth-theme-nixos-mac-style`) and as a NixOS module
+(`nixosModules.nixosMacStylePlymouth`) with `enable`, `silentBoot`, and
+`earlyKms` options. See `packages/plymouth-theme-nixos-mac-style/README.md`.
+
 ### Telegram Security Alerts (`services.alerts_tg`)
 Enables real-time notification to specified Telegram chats triggered by log listening.
 

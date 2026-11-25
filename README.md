@@ -48,6 +48,82 @@ Notes:
 - Requires home-manager in the consumer's module list for the user service;
   when absent, only the packages/themes are installed.
 
+### VGN V98 Pro V1 keyboard (`hardware.vgn.v98ProV1`)
+`nixosModules.vgn98ProV1` makes the VGN V98 Pro V1 (USB `320f:5055`)
+fully declarative. It installs `vgnctl`, generates a `vgnctl-v4` config from
+Nix options at build time, and restores it automatically on device connect
+through a udev rule. No browser or VGN HUB is required.
+
+The implementation lives in `modules/vgn98ProV1/`:
+
+- `vgn98ProV1.nix` — NixOS module and options
+- `scripts/vgnctl.pl` — HID save/restore tool; cmd 20/21 macro read/write
+- `scripts/generate-config.pl` — build-time config generator and validator
+- `data/physical-keys.json` — physical key name → key index
+- `data/logical-keys.json` — logical key name → HID value, grouped `Basic` / `Expansion`
+- `data/lighting-modes.json` — HUB lighting mode names
+- `config/v98pro-factory.json` — baseline snapshot
+
+See `modules/vgn98ProV1/README.md` for module-local details.
+
+```nix
+imports = [ inputs.nixos-modules.nixosModules.vgn98ProV1 ];
+
+hardware.vgn.v98ProV1 = {
+  lighting = {
+    enable = true;
+    brightness = 4;
+    mode = "Stepping Snow Without Trace";
+    speed = 2;
+    chroma = false;
+    color = "00796b";
+  };
+
+  performance = {
+    macMode = false;
+    sleepTime = 1;          # "never" | 0 | 1 | 3 | 5 | 10 | 30
+    pollingRate = 1000;     # 1000 | 500 | 250 | 125
+    smartSpeedX = true;
+    sixKeyRollover = false;
+    winLock = false;
+    wasdSwap = false;
+  };
+
+  # Target name -> source name or macro name.
+  keys."F12".value = "PrintScreen";
+  fnKeys."Left Shift".value = "NIXlessthan";
+
+  customLighting."Esc".rgb = [ 255 0 0 ];
+
+  macros = [
+    {
+      name = "NIXlessthan";
+      mode = "repeat-finish";
+      events = [
+        { delay = 2; status = "down"; code = 224; deviceType = 1; }
+        { delay = 2; status = "up"; code = 224; deviceType = 1; }
+      ];
+    }
+  ];
+};
+```
+
+Macro modes are the three HUB values:
+
+```text
+once          Click to Execute Once
+repeat-finish Press to Repeat, Complete Current Macro After Release Then Stop
+repeat-stop   Press to Repeat, Release to Stop Immediately
+```
+
+The macro list is padded to 16 slots at generation time with empty
+`Macro 5`…`Macro 16` entries, so empty macros do not need to be written by hand.
+
+Unknown target names, unknown source names, invalid RGB values, invalid
+indices, and out-of-range options fail the build. Restore verification reads
+back FI, key/Fn/RGB blocks, and the macro table (cmd 20) before reporting
+success. Connect-time restore output is written to `/tmp/vgnctl-restore.log`.
+
 ### Telegram Security Alerts (`services.alerts_tg`)
 Enables real-time notification to specified Telegram chats triggered by log listening.
 
@@ -138,6 +214,7 @@ Ensure all expressions are valid, references are bound, and curly brackets match
 nix eval .#nixosModules.alerts_tg
 nix eval .#nixosModules.alerts_tg_login
 nix eval .#nixosModules.alerts_tg_sudo
+nix eval .#nixosModules.vgn98ProV1
 ```
 
 ## 🛡️ License
